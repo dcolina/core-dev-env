@@ -24,6 +24,7 @@
         <java.keytar.version>1.0.0</java.keytar.version>
         <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
         <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
+        <buildnumber-maven-plugin.version>3.1.0</buildnumber-maven-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -223,6 +224,24 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <version>${buildnumber-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>generate-build-number</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <doUpdate>true</doUpdate>
+                    <timestampFormat>yyyyMMddHHmm</timestampFormat>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -305,6 +324,28 @@
                 <quarkus.package.type>native</quarkus.package.type>
                 <quarkus.native.additional-build-args>-H:ReflectionConfigurationFiles=reflection-config.json,-H:ResourceConfigurationFiles=resources-config.json</quarkus.native.additional-build-args>
             </properties>
+        </profile>
+        <profile>
+            <id>snapshot</id>
+            <activation>
+                <property>
+                    <name>project.version</name>
+                    <value>.*-SNAPSHOT</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>${quarkus.platform.group-id}</groupId>
+                        <artifactId>quarkus-maven-plugin</artifactId>
+                        <version>${quarkus.platform.version}</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <finalName>${project.artifactId}-${buildNumber}-${timestamp}</finalName>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 
